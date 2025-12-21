@@ -50,7 +50,7 @@ public:
     typedef ChainIterator<T> iterator;
 
 private:
-    ChainNode<T>* head;   // header node (circular)
+    ChainNode<T>* head;  
 
 public:
     Chain() {
@@ -88,9 +88,6 @@ public:
     }
 };
 
-*/
-
-/*
 template <class T>
 class ChainIterator {
 private:
@@ -232,7 +229,7 @@ ostream& operator<<(ostream& os, const Polynomial& x) { //cout change
     return os;
 }
 
-//加法//
+
 Polynomial Polynomial::operator+(const Polynomial& b) const {
     Polynomial c;
     ChainNode<Term>* aPtr = head->link;
