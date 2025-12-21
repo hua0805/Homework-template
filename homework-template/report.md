@@ -342,9 +342,10 @@ int main() {
 
 
 ```
-##申論及開發報告
 
-### 效能分析
+## 申論及開發報告
+
+###效能分析
 
 1. 時間複雜度：Polynomial():O(1)  ~Polynomial():O(k)  operator>>:O(n)  operator<<:O(n)  operator+:O(m+n)   operator-:O(m+n)  operator*:O(m*n)  Evaluate:O(m)  GetNode / RetNode:O(1)。
 2. 空間複雜度：Polynomial():O(n)  operator+:O(m+n)   operator-:O(m+n)  operator*:O(m*n)  Evaluate:O(1)。
