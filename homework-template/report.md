@@ -1,238 +1,385 @@
 
-# 41343141
+# 41343151
 
-作業一
-第一題
+作業三
 ## 解題說明
 
-本題要求實現一個阿克曼函數，阿克曼函數是非原始遞迴函數的例子，它需要兩個自然數作為輸入值，輸出一個自然數。
+本題要求設計一個使用循環連結串列來時做一個C++的Polynomial類別
 
 ### 解題策略
 
-1. 當m==0 時，作為遞迴的結束條件。  
-2. 主程式呼叫遞迴函式，並輸出計算結果。
+1. 定義 Term 儲存係數與指數，ChainNode 用動態資料結構來儲存項數不固定的多項式，Polynomial 用來簡化多項式的操作流程，避免特殊情況。
+2. ChainNode<Term>* head 避免處理空串列或第一項的特例以及簡化插入、刪除。
+3. static ChainNode<Term>* avail 為了提升效能，一直使用new/delete會浪費效能。
+4. GetNode(const Term& t) 有舊節點就使用如果沒有那就創造一個新節點。
+5. RetNode(ChainNode<Term>* x) 把不需要的節點刪掉。
+6. operator >>(輸入) 把外部表示法轉為內部 linked list，operator << 把將內部資料結構轉回題目指定格式。
+7. operator + 完成多項式的加法運算，operator - 多項式的減法，operator * 多項式的乘法，Evaluate 驗證多項式內容，提供實際應用功能。
 
-## 程式實作
 
-以下為主要程式碼：
+### 程式實作
+
+主要程式碼：
 
 ```cpp
+
+
 #include <iostream>
+#include <cmath>
 using namespace std;
 
-int Ackermann(const int m,const int n){
-    if(m==0)
-    return n+1;
-    else if(n==0)
-    return Ackermann(m-1,1);
-    else
-    return Ackermann(m-1,Ackermann(m,n-1));
-}
+//儲存係數與指數//
+struct Term {
+    int coef;
+    int exp;
+};
 
-int main(){
-    int m,n;
-    cout<<"輸入A(m,n) ";
-    cin>>m>>n;
-    cout<<"A("<<m<<","<<n<<")="<<Ackermann(m,n)<<endl;
-    return 0;
-}
-```
+//動態資料結構來儲存項數不固定的多項式//
+template <class T>
+class ChainNode {
+public:
+    T data;
+    ChainNode<T>* link;
 
-## 效能分析
+    ChainNode(const T& d = T(), ChainNode<T>* l = nullptr)
+        : data(d), link(l) {}
+};
 
-1. 時間複雜度：程式的時間複雜度為 *O(A(m,n))*。
-2. 空間複雜度：空間複雜度為 *O(A(m,n))*。
+/*
+template <class T>
+class Chain {
+public:
+    typedef ChainIterator<T> iterator;
 
-## 測試與驗證
+private:
+    ChainNode<T>* head;   // header node (circular)
 
-### 測試案例
-
-| 測試案例 | 輸入參數 *m* | 輸入參數 *n* | 預期輸出 | 實際輸出 |
-|----------|--------------|----------|----------|----------|
-| 測試一   | *m = 0*      | *n = 2*        | 3        | 3        |
-| 測試二   | *m = 2*      | *n = 0*        | 3        | 3        |
-| 測試三   | *m = 3*      | *n = 4*        | 125      | 125      |
-| 測試四   | *m = 2*      | *n = 3*        | 9        | 9        |
-| 測試五   | *m = 0*      | *n = 0*        | 拋出異常        | 拋出異常        |
-
-### 編譯與執行指令
-
-```shell
-$ g++ -std=c++17 -O2 -o powerset powerset.cpp
-$ ./powerset
-```
-
-### 結論
-
-1. 程式能正確計算當*m*跟*n*個別是多少時的答案。  
-2. 在*m*跟*n*都是*0*的情況下，程式會成功拋出異常，符合設計預期。  
-3. 測試案例涵蓋了多種邊界情況（*m = 0* *n = 2* || *m = 3* *n = 4* ），驗證程式的正確性。
-
-## 申論及開發報告
-
-### 選擇遞迴的原因
-
-在本程式中，使用遞迴來計算加減的主要原因如下：
-
-1. **程式邏輯簡單直觀**  
-   遞迴的寫法能夠清楚表達「將問題拆解為更小的子問題」的核心概念。  
-   例如，計算 *A(m-1,A(m,n-1)* 的過程可分解為：  
-
-   
-   <img width="660" height="166" alt="image" src="https://github.com/user-attachments/assets/5fd096a4-3a6a-4331-a8ea-ce26ca59289a" />
-   
-
-
-  當*m*=0 時，直接輸出*n+1*的質。
-
-2. **易於理解與實現**  
-   遞迴的程式碼更接近數學公式的表示方式，特別適合新手學習遞迴的基本概念。  
-   以本程式為例：  
-
-   ```cpp
-   int Ackermann(const int m,const int n){
-    if(m==0)
-    return n+1;
-    else if(n==0)
-    return Ackermann(m-1,1);
-    else
-    return Ackermann(m-1,Ackermann(m,n-1));
+public:
+    Chain() {
+        head = new ChainNode<T>();
+        head->link = head;
     }
-   ```
 
-3. **遞迴的語意清楚**  
-   在程式中，每次遞迴呼叫都代表一個「子問題的解」，而最終遞迴的返回結果會逐層相加，完成整體問題的求解。  
-   這種設計簡化了邏輯，不需要額外變數來維護中間狀態。
-   透過遞迴實作簡單的加減計算，程式邏輯簡單且易於理解，特別適合展示遞迴的核心思想。然而，遞迴會因堆疊深度受到限制，當 $n$ 值過大時，應考慮使用迭代版本來避免 Stack Overflow 問題。
-
-作業一
-第二題
-## 解題說明
-
-本題要求我實現一個*遞迴函數（recursive function）*，用來計算某個集合 *S* 的 *power set（冪集合）*。
-
-### 解題策略
-
-1. 當集合為空時（即沒有元素可處理），回傳一個只包含空集合的結果 [[]]，作為遞迴的停止條件。  
-2. 主程式呼叫遞迴函式，並輸出其結果。
-
-## 程式實作
-
-以下為主要程式碼：
-
-```cpp
-#include <iostream>
-#include <vector>
-#include <string>
-using namespace std;
-
-void PowerSetRecursive(const vector<string> &S, int index, vector<string> &subset) {
-    if (index == (int)S.size()) {
-        
-        cout << "{";
-        for (size_t i = 0; i < subset.size(); ++i) {
-            cout << subset[i];
-            if (i + 1 < subset.size()) cout << ", ";
+    ~Chain() {
+        ChainNode<T>* cur = head->link;
+        while (cur != head) {
+            ChainNode<T>* temp = cur;
+            cur = cur->link;
+            delete temp;
         }
-        cout << "}" << endl;
-        return;
+        delete head;
     }
-    PowerSetRecursive(S, index + 1, subset);
-    subset.push_back(S[index]);
-    PowerSetRecursive(S, index + 1, subset);
-    subset.pop_back(); 
+
+    bool IsEmpty() const {
+        return head->link == head;
+    }
+
+    iterator Begin() const {
+        return iterator(head->link);
+    }
+
+    iterator End() const {
+        return iterator(head);
+    }
+
+    void PushBack(const T& x) {
+        ChainNode<T>* cur = head;
+        while (cur->link != head)
+            cur = cur->link;
+        cur->link = new ChainNode<T>(x, head);
+    }
+};
+
+*/
+
+/*
+template <class T>
+class ChainIterator {
+private:
+    ChainNode<T>* current;
+
+public:
+    ChainIterator(ChainNode<T>* start = nullptr) : current(start) {}
+
+    T& operator*() const { return current->data; }
+
+    ChainIterator<T>& operator++() {
+        current = current->link;
+        return *this;
+    }
+
+    bool operator!=(const ChainIterator<T>& rhs) const {
+        return current != rhs.current;
+    }
+};
+*/
+
+//簡化多項式的操作流程//
+class Polynomial {
+private:
+    ChainNode<Term>* head;                  // header node
+    static ChainNode<Term>* avail;          // 提升效能
+
+    ChainNode<Term>* GetNode(const Term& t); //creative new node or seek old node and save file is t
+    void RetNode(ChainNode<Term>* x);        //delete old node(無用的)
+
+public:
+    Polynomial();                           // constructor
+    Polynomial(const Polynomial& a);        // copy constructor
+    ~Polynomial();                          // destructor
+
+    Polynomial& operator=(const Polynomial& a);
+
+    Polynomial operator+(const Polynomial& b) const;
+    Polynomial operator-(const Polynomial& b) const;
+    Polynomial operator*(const Polynomial& b) const;
+
+    float Evaluate(float x) const;
+
+    friend istream& operator>>(istream& is, Polynomial& x);
+    friend ostream& operator<<(ostream& os, const Polynomial& x);
+};
+
+
+ChainNode<Term>* Polynomial::avail = nullptr;
+
+
+ChainNode<Term>* Polynomial::GetNode(const Term& t) {
+    if (avail) {
+        ChainNode<Term>* x = avail;
+        avail = avail->link;
+        x->data = t;
+        return x;
+    }
+    return new ChainNode<Term>(t);
 }
+
+void Polynomial::RetNode(ChainNode<Term>* x) {
+    x->link = avail;
+    avail = x;
+}
+
+
+Polynomial::Polynomial() {
+    head = new ChainNode<Term>();
+    head->link = head;   // circular
+}
+
+Polynomial::~Polynomial() {
+    ChainNode<Term>* cur = head->link;
+    while (cur != head) {
+        ChainNode<Term>* temp = cur;
+        cur = cur->link;
+        RetNode(temp);
+    }
+    delete head;
+}
+
+
+Polynomial::Polynomial(const Polynomial& a) : Polynomial() {
+    *this = a;
+}
+
+Polynomial& Polynomial::operator=(const Polynomial& a) {
+    if (this == &a) return *this;
+
+    this->~Polynomial();
+
+    head = new ChainNode<Term>();
+    head->link = head;
+
+    ChainNode<Term>* rear = head;
+    ChainNode<Term>* cur = a.head->link;
+
+    while (cur != a.head) {
+        rear->link = GetNode(cur->data);
+        rear = rear->link;
+        cur = cur->link;
+    }
+    rear->link = head;
+    return *this;
+}
+
+
+istream& operator>>(istream& is, Polynomial& x) { //cin change
+    int n;
+    is >> n;
+
+    ChainNode<Term>* rear = x.head;
+    for (int i = 0; i < n; i++) {
+        Term t;
+        is >> t.coef >> t.exp;
+        rear->link = x.GetNode(t);
+        rear = rear->link;
+    }
+    rear->link = x.head;
+    return is;
+}
+
+
+ostream& operator<<(ostream& os, const Polynomial& x) { //cout change
+    int count = 0;
+    ChainNode<Term>* cur = x.head->link;
+
+    while (cur != x.head) {
+        count++;
+        cur = cur->link;
+    }
+
+    os << count;
+    cur = x.head->link;
+    while (cur != x.head) {
+        os << " " << cur->data.coef << " " << cur->data.exp;
+        cur = cur->link;
+    }
+    return os;
+}
+
+//加法//
+Polynomial Polynomial::operator+(const Polynomial& b) const {
+    Polynomial c;
+    ChainNode<Term>* aPtr = head->link;
+    ChainNode<Term>* bPtr = b.head->link;
+    ChainNode<Term>* rear = c.head;
+
+    while (aPtr != head && bPtr != b.head) {
+        if (aPtr->data.exp == bPtr->data.exp) {
+            int sum = aPtr->data.coef + bPtr->data.coef;
+            if (sum != 0) {
+                rear->link = c.GetNode({sum, aPtr->data.exp});
+                rear = rear->link;
+            }
+            aPtr = aPtr->link;
+            bPtr = bPtr->link;
+        }
+        else if (aPtr->data.exp > bPtr->data.exp) {
+            rear->link = c.GetNode(aPtr->data);
+            rear = rear->link;
+            aPtr = aPtr->link;
+        }
+        else {
+            rear->link = c.GetNode(bPtr->data);
+            rear = rear->link;
+            bPtr = bPtr->link;
+        }
+    }
+
+    while (aPtr != head) {
+        rear->link = c.GetNode(aPtr->data);
+        rear = rear->link;
+        aPtr = aPtr->link;
+    }
+
+    while (bPtr != b.head) {
+        rear->link = c.GetNode(bPtr->data);
+        rear = rear->link;
+        bPtr = bPtr->link;
+    }
+
+    rear->link = c.head;
+    return c;
+}
+
+//減法//
+Polynomial Polynomial::operator-(const Polynomial& b) const {
+    Polynomial negB = b;
+    for (auto cur = negB.head->link; cur != negB.head; cur = cur->link) {
+        cur->data.coef = -cur->data.coef;
+    }
+    return (*this + negB);
+}
+
+//乘法//
+Polynomial Polynomial::operator*(const Polynomial& b) const {
+    Polynomial c;
+
+    for (auto aPtr = head->link; aPtr != head; aPtr = aPtr->link) {
+        Polynomial temp;
+        ChainNode<Term>* rear = temp.head;
+
+        for (auto bPtr = b.head->link; bPtr != b.head; bPtr = bPtr->link) {
+            Term t;
+            t.coef = aPtr->data.coef * bPtr->data.coef;
+            t.exp  = aPtr->data.exp + bPtr->data.exp;
+            rear->link = temp.GetNode(t);
+            rear = rear->link;
+        }
+        rear->link = temp.head;
+        c = c + temp;
+    }
+    return c;
+}
+
+//帶入數字進去//
+float Polynomial::Evaluate(float x) const {
+    float result = 0;
+    for (auto cur = head->link; cur != head; cur = cur->link) {
+        result += cur->data.coef * pow(x, cur->data.exp);
+    }
+    return result;
+}
+
 
 int main() {
-    cout << "=== Powerset (冪集) 遞迴產生程式 ===\n";
-    cout << "請輸入集合中元素個數 n：";
+    Polynomial p1, p2;
 
-    int n;
-    cin >> n;
-    if (n <= 0) {
-        cout << "n 必須大於 0！" << endl;
-        return 0;
-    }
+    cout << "Input polynomial 1: ";
+    cin >> p1;
+    cout << "Input polynomial 2: ";
+    cin >> p2;
 
-    vector<string> S(n);
-    cout << "請輸入集合的元素（以空白分隔）：";
-    for (int i = 0; i < n; ++i)
-        cin >> S[i];
+    cout << "P1 = " << p1 << endl;
+    cout << "P2 = " << p2 << endl;
 
-    cout << "\n集合 S = { ";
-    for (int i = 0; i < n; ++i) {
-        cout << S[i];
-        if (i + 1 < n) cout << ", ";
-    }
-    cout << " }\n\n";
-    cout << "S 的所有子集合如下（共 2^" << n << " = " << (1 << n) << " 個）：\n";
+    cout << "P1 + P2 = " << (p1 + p2) << endl;
+    cout << "P1 - P2 = " << (p1 - p2) << endl;
+    cout << "P1 * P2 = " << (p1 * p2) << endl;
 
-    vector<string> subset;
-    PowerSetRecursive(S, 0, subset);
+    cout << "P1(2) = " << p1.Evaluate(2) << endl;
 
     return 0;
 }
- 
+
+
 ```
+
 
 ## 效能分析
 
-1. 時間複雜度：程式的時間複雜度為 *O(n*2^2)*。
-2. 空間複雜度：空間複雜度為 *O(2^n)*。
+1. 時間複雜度：Polynomial():O(1)  ~Polynomial():O(k)  operator>>:O(n)  operator<<:O(n)  operator+:O(m+n)   operator-:O(m+n)  operator*:O(m*n)  Evaluate:O(m)  GetNode / RetNode:O(1)。
+2. 空間複雜度： Polynomial():O(n)  operator+:O(m+n)   operator-:O(m+n)  operator*:O(m*n)  Evaluate:O(1)。
 
 ## 測試與驗證
 
 ### 測試案例
 
-| 測試案例 | 輸入參數 *n* 元素| 預期輸出 | 實際輸出 ||
-|----------|--------------|----------|----------|----------|
-| 測試一   | *n=3*   a b c   | {} {c}{b} {b, c} {a} {a, c} {a, b} {a, b, c}        | {} {c}{b} {b, c} {a} {a, c} {a, b} {a, b, c}        |
-| 測試二   | *n=2*    a b  | {} {b} {a} {a, b}        | {} {b} {a} {a, b}        |
-| 測試三   | *n=1*     a  | {} {a}      | {} {a}      |
+<img width="738" height="217" alt="image" src="https://github.com/user-attachments/assets/0e6dc5e4-5446-4bde-9269-46b70144ae78" />
+
+<img width="776" height="167" alt="image" src="https://github.com/user-attachments/assets/cf801f5d-8039-46cf-b576-2b3fad529ccc" />
+
+<img width="806" height="164" alt="image" src="https://github.com/user-attachments/assets/4a8d3fde-2475-4078-bc33-1e4c301c5ef2" />
+
+
 ### 編譯與執行指令
 
 ```shell
-$ g++ powerset.cpp -o powerset
-$ ./powerset
+$ g++ HW3.cpp -o HW3
+$ .\HW3
+
 ```
 
 ### 結論
 
-1. 程式能正確列出集合中所有子集合，並在不同輸入大小下皆可正常運作。在集合為空的情況下，程式正確回傳僅包含空集合的結果，符合遞迴設計的結束條件與預期行為。
+1. 能正確輸出*P1 P2*是多少、*P1+P2,P1-P2*,P1*P2fm,確認輸出正確以跟數值輸入進去(P1(x))也會輸出對的答案。  
+2. 利用*Circular Linked List & Header Node*完成多項式的輸入輸出、加減乘法跟數值的計算。
+3. *Available List*是提升記憶體的效率，為了避免輸入的變數太大或程式碼太多導致電腦記憶體不足。 
 
-## 申論及開發報告
+## 心得討論
 
-### 選擇遞迴的原因
+##為什麼使用 *operator>>*與*operator<<*
+*operator>>*：多載輸入運算子，讓多自訂資料型別使用能跟保持一致，用 cin >> p1  cin >> p2; 讀入資料。將輸入格式的解析，降低主程式複雜度，避免解析規則造成的錯誤。
+*operator<<*：用多載輸出運算子，多項式的格式統一，主程式只需負責輸出物件，不必關心實際的細節。輸出格式需要調整時，修改 operator<<，即可影響所有輸出結果，提升程式的可維護性與擴充性。
 
-本題使用遞迴的主要目的，是為了系統性地列出集合中所有可能的子集合組合。
 
-1. **程式邏輯簡單直觀**  
-   程式邏輯簡單直觀，運作方式清楚明瞭。
-   
-
-2. **易於理解與實現**  
-   易於理解與實現，能以簡潔的遞迴結構生成所有子集合。
-   以本程式為例：  
-
-   ```cpp
-   void PowerSetRecursive(const vector<string> &S, int index, vector<string> &subset) {
-    if (index == (int)S.size()) {
-        
-        cout << "{";
-        for (size_t i = 0; i < subset.size(); ++i) {
-            cout << subset[i];
-            if (i + 1 < subset.size()) cout << ", ";
-        }
-        cout << "}" << endl;
-        return;
-    }
-    PowerSetRecursive(S, index + 1, subset);
-    subset.push_back(S[index]);
-    PowerSetRecursive(S, index + 1, subset);
-    subset.pop_back();
-   }
-   ```
-
-3. **遞迴的語意清楚**  
-   1.遞迴語意清楚，對應「包含或不包含元素」的二元選擇邏輯。
-   2.每一層遞迴皆有明確的結束條件與回傳結果，結構層次分明。
+### 心得
+這次作業要求實作多項式並搭配鏈結串列，對我來說其實難度蠻高的，一開始我真的看不太懂整個程式在幹嘛，指標要怎麼用也沒有什麼概念，所以大多是先參考同學的寫法，再一行一行慢慢看、慢慢改，過程中也問了不少問題，在別人的幫忙下才把程式撐起來。其實我上學期就學過 C++ 的指標，也知道指標是存記憶體位址，但那時候只是在背定義，實際寫程式時根本不知道什麼情況該用、怎麼用。這次在實作多項式的過程中，慢慢才發現指標不只是拿來存資料，而是用來把每一項串起來，例如 `ChainNode<Term>*` 這種寫法，重點不是資料本身，而是用來表示各項之間的連結關係，讓整個多項式可以正常運作。另外我也比較能理解為什麼這個作業要用指標，因為多項式的項數一開始根本不確定，如果用陣列反而會被大小卡住，用指標加鏈結串列就可以視情況新增或刪除，比較有彈性。雖然這份程式不是我完全自己想出來的，也是在很多嘗試、修改跟同學協助下才完成，但至少讓我對指標實際在程式裡是怎麼用的、鏈結串列在做什麼，有比以前更清楚一點，也讓我知道寫程式不是只有一種正確答案，而是要依問題選擇比較適合的做法，對我這種基礎不太好的新手來說，能走到這一步就已經學到很多了。
