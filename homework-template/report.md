@@ -28,13 +28,11 @@
 #include <cmath>
 using namespace std;
 
-//儲存係數與指數//
 struct Term {
     int coef;
     int exp;
 };
 
-//動態資料結構來儲存項數不固定的多項式//
 template <class T>
 class ChainNode {
 public:
@@ -114,19 +112,18 @@ public:
 };
 */
 
-//簡化多項式的操作流程//
 class Polynomial {
 private:
-    ChainNode<Term>* head;                  // header node
-    static ChainNode<Term>* avail;          // 提升效能
+    ChainNode<Term>* head;                  
+    static ChainNode<Term>* avail;          
 
-    ChainNode<Term>* GetNode(const Term& t); //creative new node or seek old node and save file is t
-    void RetNode(ChainNode<Term>* x);        //delete old node(無用的)
+    ChainNode<Term>* GetNode(const Term& t);
+    void RetNode(ChainNode<Term>* x);        
 
 public:
-    Polynomial();                           // constructor
-    Polynomial(const Polynomial& a);        // copy constructor
-    ~Polynomial();                          // destructor
+    Polynomial();                           
+    Polynomial(const Polynomial& a);        
+    ~Polynomial();                         
 
     Polynomial& operator=(const Polynomial& a);
 
@@ -280,7 +277,7 @@ Polynomial Polynomial::operator+(const Polynomial& b) const {
     return c;
 }
 
-//減法//
+
 Polynomial Polynomial::operator-(const Polynomial& b) const {
     Polynomial negB = b;
     for (auto cur = negB.head->link; cur != negB.head; cur = cur->link) {
@@ -289,7 +286,7 @@ Polynomial Polynomial::operator-(const Polynomial& b) const {
     return (*this + negB);
 }
 
-//乘法//
+
 Polynomial Polynomial::operator*(const Polynomial& b) const {
     Polynomial c;
 
@@ -310,7 +307,7 @@ Polynomial Polynomial::operator*(const Polynomial& b) const {
     return c;
 }
 
-//帶入數字進去//
+
 float Polynomial::Evaluate(float x) const {
     float result = 0;
     for (auto cur = head->link; cur != head; cur = cur->link) {
